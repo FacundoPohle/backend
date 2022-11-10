@@ -38,8 +38,13 @@ class Contenedor {
           }
 
     async getAll(){
-        const leer = await fs.readFile(this.path, "utf-8")
+        try {
+            const leer = await fs.readFile(this.path, "utf-8")
         return JSON.parse(leer)
+        }
+        catch(error){
+            console.log(error)
+        }
     }
 
    async deleteById(id){

@@ -1,28 +1,33 @@
-const Container = require('./data2.js')
-const productos = new Container('./productos.json')
+const express = require ('express')
+const Container = require('./container/archivos.Container.js')
 
-async function ejecutar(){
+const app = express()
+const PORT = 8080
 
-    const objeto1 = {
-        nombre: 'zapatilla roja y negra',
-        precio: 6000,
-        thumbnail: 'url'
-    }
+const archivo = new Container('productos.txt')
 
-    const objeto2 = {
-        nombre: 'zapatilla verde y violeta',
-        precio: 4000,
-        thumbnail: 'url'
-    }
+app.get('/productos', async (req, res) => {
+    const prods = await archivo.getAll()
+    console.log(prods)
+    console.log('holaaaaaa')
+    
+    res.send({Productos: prods})
+})
 
-    const objeto3 = {
-        nombre: 'azul y turquesa',
-        precio: 7000,
-        thumbnail: 'url'
-    }
+app.get('/productosRandom', async (req, res) => {
+    const prods = await archivo.getAll()
+    const random = parseInt(Math.random() * prods.length)
+    res.send({Productos: prods[random]})
+})
+
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo en el puerto ${PORT}`)
+})
+// async function ejecutar(){
+
     // await productos.save(objeto1)
     // await productos.save(objeto2)
     // await productos.getById(2).then(id=>console.log(id))
-    await productos.deleteById(1)
-}
-ejecutar()
+    // await productos.deleteById(1)
+// }
+// ejecutar()
