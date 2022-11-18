@@ -1,69 +1,43 @@
-const fs = require("fs").promises
+const ERROR = { error: "producto no encontrado" };
 
 class Contenedor {
-    constructor(path){
-        this.path = path
+    constructor(){
+        this.products = [];
     }
 
-    async save(objeto){
-        try{
-            const leer = await fs.readFile(this.path, "utf-8");
-            const data = JSON.parse(leer)
-            let id;
-                data.length === 0
-                ? (id = 1)
-                : (id = data[data.length - 1].id + 1);
-                const newProduct = {...objeto, id};
-                data.push(newProduct)
-                await fs.writeFile(this.path, JSON.stringify(data, null, 2), "utf-8")
-                return newProduct.id
-        } catch(e){
-            console.log(e)
-        }
+    getAll() {
+        return this.products;
     }
 
-    async getById(id){
-        try{
-            const leer= await fs.readFile(this.path,"utf-8");
-            const data= JSON.parse(leer)
-            const obj= data.find(obj=>obj.id===id)
-            if(!obj){
-                return null
-            }
-            return obj
-        
-        }catch(e){
-            console.log(e)
-        }
-          }
+    getById(id) {
+        const obj = this.products.find((product) => product.id === id);
+        obj ? obj : ERROR;
+    }
 
-    async getAll(){
-        try {
-            const leer = await fs.readFile(this.path, "utf-8")
-        return JSON.parse(leer)
-        }
-        catch(error){
-            console.log(error)
+    create(obj) {
+        const arrayOfIds = this.products.map((product) => product.id);
+        const maxId = arrayOfIds.length === 0 ? 0 : Math.max(...arrayOfIds);
+        const id = maxId + 1;
+        const newObj = { id, ...obj};
+        this.products.push(newObj);
+        return newObj;
+    }
+
+    updateById(id, obj) {
+        const foundObj = this.products.map((product) => product.id === id);
+        if(foundObj) {
+            const filteredProducts = this.products.filter((product) => product.id != id);
+        const newObj = {id, ...obj};
+        this.products = {...filteredProducts, newObj};
+        return newObj; 
+        } else{
+        return         ERROR;
         }
     }
 
-   async deleteById(id){
-        try{
-            const leer= await fs.readFile(this.path,"utf-8");
-            const data= JSON.parse(leer)
-            const obj= data.filter(obj=>obj.id!==id)
-            await fs.writeFile(this.path, JSON.stringify(obj, null, 2), "utf-8")
-        }catch(e){
-            console.log(e)
-        }
-    }
-
-    async deleteAll(){
-        try{
-            await fs.writeFile(this.path, JSON.stringify([], null, 2), "utf-8")
-        } catch (e){
-            console.log(e)
-        }
+    deleteById(id) {
+       const obj =  this.products.filter((product) => product.id!== Number(id))
+       return obj
     }
 }
 
