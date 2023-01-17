@@ -1,5 +1,10 @@
 import { promises as fs } from 'fs'
 import config from '../config.js'
+import util from 'util'
+
+function print(objeto) {
+    console.log(util.inspect(objeto, false, 12, true));
+}
 
 class ContenedorArchivo {
 
@@ -16,25 +21,33 @@ class ContenedorArchivo {
     async listarAll() {
         try {
             const objs = await fs.readFile(this.ruta, 'utf-8')
+            // console.log(objs);
+            // //Definimos un esquemas de autores
+            // const authorSchema = new schema.Entity('authors',{}, {idAttribute:"mail"});
+            // const textSchema = new schema.Entity('text');
+            // const mensajeSchema = new schema.Entity('messages', {
+            //     author: authorSchema,
+            //     text: [textSchema]
+            // });
+            // const normalizedMessage = normalize(JSON.parse(objs), [mensajeSchema]);
+            // print(normalizedMessage);
             return JSON.parse(objs)
         } catch (error) {
+            console.log(error);
             return []
         }
     }
 
     async guardar(obj) {
         const objs = await this.listarAll()
-
         let newId
         if (objs.length == 0) {
             newId = 1
         } else {
             newId = objs[objs.length - 1].id + 1
         }
-
         const newObj = { ...obj, id: newId }
         objs.push(newObj)
-
         try {
             await fs.writeFile(this.ruta, JSON.stringify(objs, null, 2))
             return newObj
