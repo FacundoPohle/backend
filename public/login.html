@@ -15,13 +15,20 @@
         <div class="jumbotron">
             <h1>Login de Usuario</h1>
             <br>
-            <form action="/login" method="post" autocomplete="off">
+            <form action="login" method="post" autocomplete="off">
                 <div class="form-group">
-                    <label for="nombre">Ingrese su nombre</label>
-                    <input id="nombre" class="form-control" type="text" name="nombre" required>
+                    <label for="emailUser">Ingrese su email</label>
+                <input id="emailUser" class="form-control" type="email" name="emailUser" required>
+                </div>
+                <div class="form-group">
+                    <label for="passwordUser">Ingrese su contraseña</label>
+                <input id="passwordUser" class="form-control" type="password" name="passwordUser" required>
                 </div>
                 <button class="btn btn-success mt-3">Enviar</button>
             </form>
+            <div class="text-left">
+                <button class="btn btn-success my-3" onclick="location.href = '/register'">Ir a Register</button>
+                </div>
         </div>
     </div>
 </body>
