@@ -1,101 +1,30 @@
-import { Router } from 'express'
-import SessionService from '../../contenedores/ContenedorSession.js';
-import objectUtils from '../../utils/objectUtils.js';
-import path from 'path'
-import passport from 'passport'
-import { Strategy } from "passport-local";
-const LocalStrategy = Strategy;
-const authWebRouter = new Router()
-const sessionService = new SessionService()
+import { Router } from "express";
 
-passport.use(
-    'login',
-    new LocalStrategy(
-      {
-        usernameField: 'emailUser',
-        passwordField: 'passwordUser',
-        passReqToCallback: true,
-      },
-      async (req, emailUser, passwordUser, done) => {
-        const usuario = await sessionService.buscarUsuarioPorEmail(emailUser)
-        if (!usuario) return done(null, false)
-        if (!objectUtils.isValidPassword(usuario, passwordUser)) return done(null, false)
-        return done(null, usuario)
-      }
-    )
-  )
-  // Serialize
-  passport.serializeUser((user, done) => {
-    done(null, user.email)
-  })
-  // Deserialize
-  passport.deserializeUser(async (email, done) => {
-    const user = await sessionService.buscarUsuarioPorEmail(email)
-    done(null, user)
-  })
+import { uploader } from "../../utils/multer/multer.js";
+import { authenticate } from "../../utils/passport/passport.js";
+import { getLogin, getLoginError, getLogout, getSignin, postSignin } from "../../controllers/auth.Controllers.js";
 
+const authWebRouter = new Router();
 
-// -------------------------------- RUTAS ---------------------------------------------------------
+/*----------- rutas -----------*/
+/*----- login -----*/
+authWebRouter.get("/", (req, res) => {
+  res.redirect("login");
+});
 
-authWebRouter.get('/', (req, res) => {
-    res.redirect('/home')
-})
+authWebRouter.get("/login", getLogin);
 
-authWebRouter.get('/login', (req, res) => {
-    if(req.session.passport?.user){
-        res.redirect('/home')
-    }else{
-    res.sendFile('login.html', {root: 'public'})
-    }
-})
+authWebRouter.post("/login", authenticate);
 
-authWebRouter.post(
-    '/login',
-    passport.authenticate('login', {
-      successRedirect: '/home',
-      failureRedirect: '/login-error',
-      passReqToCallback: true,
-    }),
-    (req, res) => {
-      res.cookie('userEmail', req.session.passport.user)
-    }
-  )
+/*----- logout -----*/
+authWebRouter.get("/logout", getLogout);
 
-authWebRouter.get('/register', (req, res)=>{
-    res.sendFile('register.html', {root: 'public'})
-})
+/*----- login-error -----*/
+authWebRouter.get("/login-error", getLoginError);
 
-authWebRouter.post('/register', async(req, res)=>{
-  const registerData = { email: req.body.registerEmail, password: req.body.registerPassword }
-  const response = await sessionService.registrarUsuario(registerData)
-  if (response) {
-    console.log("registrado correctamente");
-    res.redirect('/login')
-  } else {
-    res.redirect('/register-error')
-  }
-})
+/*----- signin -----*/
+authWebRouter.get("/signin", getSignin);
 
-authWebRouter.get('/logout', (req, res) => {
-    const nombre = req.session.passport?.user
-    if (nombre) {
-        req.session.destroy(err => {
-            if (!err) {
-                res.render(path.join(process.cwd(), '/views/pages/logout.ejs'), { nombre })
-            } else {
-                res.redirect('/')
-            }
-        })
-    } else {
-        res.redirect('/')
-    }
-})
+authWebRouter.post("/signin", uploader.single("foto"), postSignin);
 
-authWebRouter.get('/register-error', (req, res) =>{
-    res.sendFile('register-error.html', {root: 'public'})
-})
-
-authWebRouter.get('/login-error', (req, res) =>{
-    res.sendFile('login-error.html', {root: 'public'})
-})
-export default authWebRouter
+export default authWebRouter;
